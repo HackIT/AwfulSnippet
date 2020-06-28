@@ -6,6 +6,15 @@ AwfulSnippet - Is an awful snippet store, helping me to memorize the best dialec
 ![screenshot](https://raw.githubusercontent.com/HackIT/AwfulSnippet/master/screenshot.png)
 
 
+### dependancies
+
+- Python2.7
+
+- GTK2
+
+- GTKSourceview2
+
+
 ### info
 
 - icon.png doesn't belong to the project... it's just a place holder...

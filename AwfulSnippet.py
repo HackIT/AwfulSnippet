@@ -46,14 +46,14 @@ class config ():
 class CodeSnippet ():
     """Import this class in your code to programmatically
        handle snippet to a given xml bed.
-    
+
        **Actually you can only create and fill a new snippet file.**
     """
     def __init__ ( self ):
         self.folders  = []
         self.snippets = []
         self.tags     = []
-        
+
         xml = xml.dom.minidom.getDOMImplementation ()
         self.doc  = xml.createDocument ( None, "root", None )
         self.root = self.doc.documentElement
@@ -435,7 +435,7 @@ class LanguageManager ( gtksourceview2.LanguageManager ):
 def folder_selection ( widget, *args ):
     debug("FolderView -> on_folder_selection")
     model, iter = widget.get_selection ().get_selected ()
-    print model, iter
+    #print model, iter
     if iter:
         id = model.get_value ( iter, FOLDER_ID )
         if id:
@@ -452,7 +452,7 @@ def folder_selection ( widget, *args ):
 #############################################################################
 def folder_menu ( widget, event, *args ):
     debug("FolderView -> on_folder_menu")
-    print widget, event, args
+    #print widget, event, args
     path = widget.get_path_at_pos(int(event.x), int(event.y))
     #if not widget.get_selection().get_selected():
     #widget.row_activated(path,widget.get_column(0))
@@ -514,7 +514,7 @@ class FolderView ( TreeView ):
     def set_folder_id ( self, id ):
         debug("FolderView -> set_folder_id")
         self.snippetstore.set_folder ( id )
-        print "set folder", id
+        #print "set folder", id
 
     #############################################################################
     # @brief Add folder
@@ -568,7 +568,7 @@ class FolderView ( TreeView ):
         model    = self.get_model ()
         iter     = model.get_iter_from_string ( path_string )
         old_text = model.get_value ( iter, FOLDER_NAME )
-        
+
         if old_text != new_text:
             model.set_value ( iter, FOLDER_NAME, new_text )
             self.mainwindow.modified ( True )
@@ -587,7 +587,7 @@ class FolderStore ( gtk.TreeStore ):
 #############################################################################
 def tag_selection ( widget, *args ):
     debug("TagView -> on_tag_selection")
-    print widget, args
+    #print widget, args
     model, iter = widget.get_selection ().get_selected ()
     if iter:
         name = model.get_value ( iter, TAG_NAME )
@@ -620,7 +620,7 @@ class TagStore ( gtk.ListStore ):
 #############################################################################
 def snippet_selection ( widget, *args ):
     debug("SnippetView -> on_selection")
-    print widget, args
+    #print widget, args
     f_model, f_iter = widget.get_selection ().get_selected ()
     if f_iter:
         code     = f_model.get_value ( f_iter, SNIPPET_CODE ) or ''
@@ -632,7 +632,7 @@ def snippet_selection ( widget, *args ):
 # @brief When user clicks inside snippetview
 #############################################################################
 def snippet_menu ( widget, event, *args ):
-    print widget, event, args
+    #print widget, event, args
     if event.button != 3:
         return
     if widget.get_path_at_pos(int(event.x), int(event.y)):
@@ -711,7 +711,7 @@ class SnippetView ( TreeView ):
     #############################################################################
     def remove_snippet ( self, menuItem ):
         debug("SnippetView -> on_remove")
-        print "remove_snippet() => ", self, menuItem
+        #print "remove_snippet() => ", self, menuItem
         dialog = RemoveSnippetDialog ( self.mainwindow )
         rc = dialog.run ()
         dialog.hide ()
@@ -736,14 +736,14 @@ class SnippetView ( TreeView ):
 
     def properties_snippet ( self, menuItem ):
         debug("SnippetView -> on_properties")
-        print "properties_snippet() => ", self, menuItem
+        #print "properties_snippet() => ", self, menuItem
         # find selected row
         f_model, f_iter = self.get_selection ().get_selected ()
         if f_iter:
             iter  = f_model.convert_iter_to_child_iter ( f_iter )
             model = f_model.get_model ()
         else:
-            print "iter was none"
+            #print "iter was none"
             return
         # get data
         title    = model.get_value ( iter, SNIPPET_TITLE )
@@ -805,14 +805,14 @@ class SnippetView ( TreeView ):
     def title_snippet ( self, cell, path_string, new_text ):
         debug("SnippetView -> on_edited")
         # treemodelfilter
-        print self, cell, path_string, new_text
+        #print self, cell, path_string, new_text
         f_model  = self.get_model ()
         f_iter   = f_model.get_iter_from_string ( path_string )
         # treestore
         iter     = f_model.convert_iter_to_child_iter ( f_iter )
         model    = f_model.get_model ()
         old_text = model.get_value ( iter, SNIPPET_TITLE )
-        
+
         if old_text != new_text:
             model.set_value ( iter, SNIPPET_TITLE, new_text )
             self.mainwindow.modified ( True )
@@ -849,7 +849,7 @@ class SnippetStore ( gtk.ListStore ):
         self.__folder_id = folder_id
         self.__tag = None
         self.__filter.refilter ()
-    
+
     #############################################################################
     # @brief Set parent tag and refilter
     #############################################################################
@@ -943,7 +943,7 @@ class TextBuffer ( gtksourceview2.Buffer ):
 #############################################################################
 def populate_menu ( widget, popup, data=None ):
     debug("TextView -> on_populate_popup")
-    print "on_populate_popup () => ", widget, popup, data
+    #print "on_populate_popup () => ", widget, popup, data
     item = gtk.MenuItem ( 'Highlight' )
     item.show ()
     popup.append (item)
@@ -978,7 +978,7 @@ class TextView ( gtksourceview2.View ):
         self.set_right_margin_position ( 80 )
         self.set_show_right_margin ( True )
         self.set_insert_spaces_instead_of_tabs ( True )
-        
+
         self.set_draw_spaces ( gtksourceview2.DRAW_SPACES_SPACE|gtksourceview2.DRAW_SPACES_TAB )
         self.modify_font ( pango.FontDescription ( config.appFont ) )
         self.gtkSourceGutter = self.get_gutter ( gtk.TEXT_WINDOW_LEFT )
@@ -1135,7 +1135,7 @@ class UserInterface ( gtk.VBox ):
         self.snippets.clear ()
         self.folders.clear ()
         self.tags.clear ()
-        
+
         snippetdir = re.sub( '/pysnippet.xml$', '', config.appFile )
 
         if filename:
@@ -1350,14 +1350,14 @@ class AwfulSnippet ( gtk.Window ):
     def __init__ (self):
         super ( AwfulSnippet, self ).__init__ ( gtk.WINDOW_TOPLEVEL )
         self.set_title ( config.appName )
-        
+
         self.accelGroup = gtk.AccelGroup ()
         self.add_accel_group ( self.accelGroup )
-        print os.path.abspath('.')
+        #print os.path.abspath('.')
         try:
             self.set_icon_from_file ( config.appIcon )
         except Exception, e:
-            print e.message
+            #print e.message
 
         self.connect ( "destroy", self.mainQuit )
         self.set_size_request ( 800, 600 )
