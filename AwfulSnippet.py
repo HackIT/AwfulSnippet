@@ -300,6 +300,12 @@ class Menubar( gtk.MenuBar ):
                     'label':"Use previous properties",
                     'is_active':False,
                     'activate':gtkWindow.use_previous_properties
+                },
+                {
+                    'type':CHECK_MENU_ITEM,
+                    'label':"Auto clipboard",
+                    'is_active':False,
+                    'activate':gtkWindow.use_auto_clipboard
                 }
             ]},
             {
@@ -710,7 +716,7 @@ class SnippetView ( TreeView ):
     # @brief Remove selected snippet
     #############################################################################
     def remove_snippet ( self, menuItem ):
-        debug("SnippetView -> on_remove")
+        debug("SnippetView -> remove_snippet")
         #print "remove_snippet() => ", self, menuItem
         dialog = RemoveSnippetDialog ( self.mainwindow )
         rc = dialog.run ()
@@ -925,18 +931,6 @@ class TextBuffer ( gtksourceview2.Buffer ):
         self.end_not_undoable_action ()
         self.set_modified ( False )
 
-        self.copy_to_clipboard ()
-
-    #############################################################################
-    # @brief Copy code to clipboard
-    #############################################################################
-    def copy_to_clipboard ( self ):
-        debug("TextBuffer -> copy_to_clipboard")
-        start, end = self.get_bounds ()
-        code = self.get_text ( start, end )
-
-        clipboard = gtk.clipboard_get ( gtk.gdk.SELECTION_CLIPBOARD )
-        clipboard.set_text ( code.strip () )
 
 #############################################################################
 # @brief Populate popup menu
@@ -962,6 +956,7 @@ def populate_menu ( widget, popup, data=None ):
 
 class TextView ( gtksourceview2.View ):
     language = None
+    clipboard = False
     def __init__ ( self, ui ):
         super ( TextView, self ).__init__ ( TextBuffer () )
         debug("TextView -> __init__")
@@ -994,13 +989,14 @@ class TextView ( gtksourceview2.View ):
         self.get_buffer ().connect ( 'changed', self.on_modified )
         self.set_editable ( True )
         self.set_cursor_visible ( True )
+        if self.clipboard:
+            self.copy_to_clipboard ()
 
     #############################################################################
     # @brief Occurs when buffer is modified
     #############################################################################
     def on_modified ( self, buffer, data=None ):
         debug("TextView -> on_modified")
-        buffer.copy_to_clipboard ()
         start, end = buffer.get_bounds ()
         # sets snippet_code to the selected snippet
         self.ui.set_snippet_code ( buffer.get_text ( start, end ) )
@@ -1018,6 +1014,25 @@ class TextView ( gtksourceview2.View ):
             code = model.get_value ( iter, SNIPPET_CODE )
         self.new_buffer ( code, data )
         self.ui.mainwindow.modified ( True )
+
+    #############################################################################
+    # @brief Snippet properties
+    #############################################################################
+    def use_auto_clipboard ( self ):
+        debug("SnippetView -> use_previous_props")
+        self.clipboard = not self.clipboard
+
+    #############################################################################
+    # @brief Copy code to clipboard
+    #############################################################################
+    def copy_to_clipboard ( self ):
+        debug("TextView -> copy_to_clipboard")
+        buff = self.get_buffer()
+        start, end = buff.get_bounds ()
+        code = buff.get_text ( start, end )
+
+        clipboard = gtk.clipboard_get ( gtk.gdk.SELECTION_CLIPBOARD )
+        clipboard.set_text ( code.strip () )
 
 ######################################################
 ## MAIN
@@ -1287,6 +1302,10 @@ class AwfulSnippet ( gtk.Window ):
         debug("AwfulSnippet -> use_previous_properties")
         self.ui.snippetview.use_previous_props()
 
+    def use_auto_clipboard ( self, ImageMenuItem=None ):
+        debug("AwfulSnippet -> use_auto_clipboard")
+        self.ui.textview.use_auto_clipboard()
+
     def mainQuit ( self, widget ):
         debug("AwfulSnippet -> mainQuit")
         if self.__modified:
@@ -1357,7 +1376,7 @@ class AwfulSnippet ( gtk.Window ):
         try:
             self.set_icon_from_file ( config.appIcon )
         except Exception, e:
-            #print e.message
+            print e.message
 
         self.connect ( "destroy", self.mainQuit )
         self.set_size_request ( 800, 600 )
