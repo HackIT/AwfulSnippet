@@ -1060,7 +1060,7 @@ class TextView ( gtksourceview2.View ):
         snippet.close()
         
         proc = subprocess.Popen(
-            'curl --user-agent "curl/0.00.0" --socks4a 192.168.0.100:8118 -F"file=@/tmp/_snippet" https://0x0.st',
+            'curl --user-agent "curl/0.00.0" -F"file=@/tmp/_snippet" https://0x0.st',
                             shell=True,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
