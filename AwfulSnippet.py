@@ -5,7 +5,7 @@
 # Refactoring from pySnippet-1.3 by Eduardo Aguiar (aguiar@users.sourceforge.net).
 
 import os, sys, base64, xml.dom.minidom, string, re
-import gtk, gobject, pango, gtksourceview2
+import gtk, gobject, pango, gtksourceview2, subprocess
 
 (SNIPPET_PARENT,
  SNIPPET_TITLE,
@@ -91,6 +91,16 @@ class CodeSnippet ():
             return
         self.doc.writexml ( fp, indent="  ", newl="\n" )
         fp.close ()
+
+class ShareSnippetDialog( gtk.MessageDialog ):
+    def __init__ ( self, window, shared="Something went wrong." ):
+        super ( ShareSnippetDialog, self ).__init__ (
+            window,
+            gtk.DIALOG_MODAL,
+            gtk.MESSAGE_INFO,
+            gtk.BUTTONS_NONE )
+        self.set_markup(shared)
+        self.show()
 
 class RemoveSnippetDialog( gtk.MessageDialog ):
     def __init__ ( self, window ):
@@ -367,6 +377,7 @@ class Menubar( gtk.MenuBar ):
                     menu_label_items.append ( menu_item )
                     continue
             self.append ( menu_label )
+        self.show ()
 
     def menubarView ( self, checkMenuItem ):
         if checkMenuItem.active:
@@ -931,13 +942,16 @@ class TextBuffer ( gtksourceview2.Buffer ):
         self.end_not_undoable_action ()
         self.set_modified ( False )
 
-
 #############################################################################
-# @brief Populate popup menu
+# @brief Populate(insert) textview popup menu
 #############################################################################
 def populate_menu ( widget, popup, data=None ):
-    debug("TextView -> on_populate_popup")
-    #print "on_populate_popup () => ", widget, popup, data
+    debug("populate_menu")
+    item = gtk.MenuItem ( 'Share snippet' )
+    item.show ()
+    popup.append ( item )
+    item.connect ( 'activate', widget.share_snippet )
+
     item = gtk.MenuItem ( 'Highlight' )
     item.show ()
     popup.append (item)
@@ -1004,7 +1018,7 @@ class TextView ( gtksourceview2.View ):
     #############################################################################
     # @brief Change syntax highlight property
     #############################################################################
-    def on_syntax_selection ( self, item, data=None ):
+    def on_syntax_selection ( self, menuItem, data=None ):
         debug("TextView -> on_syntax_selection")
         self.language = data
         f_model, f_iter = self.ui.snippetview.get_selection ().get_selected ()
@@ -1016,7 +1030,7 @@ class TextView ( gtksourceview2.View ):
         self.ui.mainwindow.modified ( True )
 
     #############################################################################
-    # @brief Snippet properties
+    # @brief Switch auto clipboard
     #############################################################################
     def use_auto_clipboard ( self ):
         debug("SnippetView -> use_previous_props")
@@ -1033,6 +1047,31 @@ class TextView ( gtksourceview2.View ):
 
         clipboard = gtk.clipboard_get ( gtk.gdk.SELECTION_CLIPBOARD )
         clipboard.set_text ( code.strip () )
+
+    #############################################################################
+    # @brief Populate(insert) textview popup menu
+    #############################################################################
+    def share_snippet ( self , menuItem ):
+        buff = self.get_buffer()
+        start, end = buff.get_bounds ()
+        code = buff.get_text ( start, end )
+        snippet = open('/tmp/_snippet', 'w')
+        snippet.write( code )
+        snippet.close()
+        
+        proc = subprocess.Popen(
+            'curl --user-agent "curl/0.00.0" --socks4a 192.168.0.100:8118 -F"file=@/tmp/_snippet" https://0x0.st',
+                            shell=True,
+                            stdin=subprocess.PIPE,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            )
+        out_val, err_val = proc.communicate()
+        if out_val:
+            clipboard = gtk.clipboard_get ( gtk.gdk.SELECTION_CLIPBOARD )
+            clipboard.set_text ( out_val.strip () )
+            ShareSnippetDialog( self.ui.mainwindow, out_val )
+
 
 ######################################################
 ## MAIN
