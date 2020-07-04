@@ -1039,12 +1039,12 @@ class TextView ( gtksourceview2.View ):
     #############################################################################
     # @brief Copy code to clipboard
     #############################################################################
-    def copy_to_clipboard ( self ):
+    def copy_to_clipboard ( self, ret=None ):
         debug("TextView -> copy_to_clipboard")
         buff = self.get_buffer()
         start, end = buff.get_bounds ()
         code = buff.get_text ( start, end )
-
+        if ret: return code
         clipboard = gtk.clipboard_get ( gtk.gdk.SELECTION_CLIPBOARD )
         clipboard.set_text ( code.strip () )
 
@@ -1052,21 +1052,20 @@ class TextView ( gtksourceview2.View ):
     # @brief Populate(insert) textview popup menu
     #############################################################################
     def share_snippet ( self , menuItem ):
-        buff = self.get_buffer()
-        start, end = buff.get_bounds ()
-        code = buff.get_text ( start, end )
-        snippet = open('/tmp/_snippet', 'w')
-        snippet.write( code )
-        snippet.close()
+        code = self.copy_to_clipboard ( True )
+        snippet = open ('/tmp/_snippet', 'w')
+        snippet.write ( code )
+        snippet.close ()
         
         proc = subprocess.Popen(
-            'curl --user-agent "curl/0.00.0" -F"file=@/tmp/_snippet" https://0x0.st',
-                            shell=True,
-                            stdin=subprocess.PIPE,
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE,
-                            )
+        'curl --user-agent "curl/0.00.0" -F"file=@/tmp/_snippet" https://0x0.st',
+                shell=True,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+        )
         out_val, err_val = proc.communicate()
+        os.unlink('/tmp/_snippet')
         if out_val:
             clipboard = gtk.clipboard_get ( gtk.gdk.SELECTION_CLIPBOARD )
             clipboard.set_text ( out_val.strip () )
