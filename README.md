@@ -1,18 +1,40 @@
 # AwfulSnippet
+
 AwfulSnippet - Is an awful snippet store, helping me to memorize the best dialect formulas.
 
+It is a refactoring from PySnippet v1.3 Eduardo Aguiar (aguiar@users.sourceforge.net)
+
 ### screenshot
+
 - you may experience a bad feel if your GTK2 theme is total crap...
+
 ![screenshot](https://raw.githubusercontent.com/HackIT/AwfulSnippet/master/screenshot.png)
 
 
 ### dependancies
 
-- Python2.7
-
 - GTK2
 
-- GTKSourceview2
+- GTKSourceview2 
+
+- Python2.7
+
+- PyGTK2
+
+- PyGTKSourceview2 
+
+
+### features
+
+- user defined folder hierarchy as **tree and tags**
+
+- share your snippet on the web using **bpaste service**
+
+- **autoclipboard**, each times you select a snippet it available to your clipboard directly.
+
+- store snippets into an xml structure available in your HOME directory $HOME/.pysnippet/pysnippet.xml
+
+- awesome sourceview's syntax highlighting
 
 
 ### info
