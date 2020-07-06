@@ -32,9 +32,11 @@ It is a refactoring from PySnippet v1.3 Eduardo Aguiar (aguiar@users.sourceforge
 
 - **autoclipboard**, each times you select a snippet it available to your clipboard directly.
 
-- store snippets into an xml structure available in your HOME directory $HOME/.pysnippet/pysnippet.xml
+- **store** snippets into an xml structure available in your HOME directory $HOME/.pysnippet/pysnippet.xml
 
-- awesome sourceview's syntax highlighting
+- option menu offering control to AwfulSnippet's **behavior**
+
+- **awesome** sourceview's syntax highlighting
 
 
 ### info
