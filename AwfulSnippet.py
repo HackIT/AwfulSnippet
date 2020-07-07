@@ -236,10 +236,10 @@ class SaveFileDialog( gtk.FileChooserDialog ):
         )
         self.set_default_response ( gtk.RESPONSE_CANCEL )
 
-class Menubar( gtk.MenuBar ):
+class Menus( gtk.MenuBar ):
     # Menu bar seem doesn't like cold start
     def __init__( self, gtkWindow ):
-        super( Menubar, self ).__init__()
+        super( Menus, self ).__init__()
 
         # type:
         # 0 == gtk.MenuItem
@@ -428,7 +428,7 @@ class Menubar( gtk.MenuBar ):
                 'activate':snippetView.new_snippet, 'event':event}] )
 
     #############################################################################
-    # @brief Populate(insert) textview popup menu
+    # @brief Populate(insert) textview's popup menu
     #############################################################################
     def populate_menu ( self, widget, popup, data=None ):
         debug("populate_menu")
@@ -907,6 +907,7 @@ class SnippetStore ( gtk.ListStore ):
 
 ######################################################
 ## TEXTVIEW
+
 class TextBuffer ( gtksourceview2.Buffer ):
     def __init__ ( self, code=None, lang=None ):
         super ( TextBuffer, self ).__init__ ()
@@ -942,8 +943,6 @@ class TextBuffer ( gtksourceview2.Buffer ):
         self.set_text ( code.strip () )
         self.end_not_undoable_action ()
         self.set_modified ( False )
-
-
 
 class TextView ( gtksourceview2.View ):
     language = None
@@ -1048,9 +1047,9 @@ class TextView ( gtksourceview2.View ):
             clipboard.set_text ( out_val.strip () )
             ShareSnippetDialog( self.ui.mainwindow, out_val )
 
-
 ######################################################
 ## MAIN
+
 class UserInterface ( gtk.VBox ):
     __folder_id = None
     __tag = None
@@ -1061,7 +1060,7 @@ class UserInterface ( gtk.VBox ):
         self.mainwindow          = gtkWindow
         self.snippetstore        = SnippetStore ()
 
-        self.menuview            = Menubar ( self.mainwindow )
+        self.menuview            = Menus ( self.mainwindow )
         self.textview            = TextView ( self )
         self.snippetview         = SnippetView ( self )
         self.folderview          = FolderView ( self )
