@@ -23,6 +23,13 @@ It is a refactoring from PySnippet v1.3 Eduardo Aguiar (aguiar@users.sourceforge
 
 - PyGTKSourceview2 
 
+- Curl
+
+
+### TODO
+
+- find new way to remove global functions and add them back to object methods... It's ugly and I hate that.
+problem were that these functions were getting 2 times the same object(as arguments) using callbacks...
 
 ### features
 

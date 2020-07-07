@@ -136,9 +136,6 @@ class AboutDialog ( gtk.AboutDialog ):
     def __init__ ( self, menuItem ):
         super ( AboutDialog, self ).__init__ ()
         self.set_size_request ( 300, 200 )
-        #print self, menuItem
-        #self.set_transient_for(self)
-        #self.set_position(gtk.WIN_POS_CENTER_ON_PARENT)
         self.set_position ( gtk.WIN_POS_CENTER )
         self.set_program_name ( config.appName+"\302\251" )
         self.set_version ( config.appVersion )
@@ -1214,7 +1211,6 @@ class UserInterface ( gtk.VBox ):
             tags     = node.getAttribute ( 'tags' )
             author   = node.getAttribute ( 'author' )
             code     = base64.b64decode ( node.childNodes[ 0 ].data )
-            #print parent, title, language, tags, author, code
 
             if tags:
                 tags = tags.split ( ',' )
@@ -1275,7 +1271,6 @@ class UserInterface ( gtk.VBox ):
             slot.setAttribute ( 'parent', str (parent) )
             slot.setAttribute ( 'title', title )
             slot.setAttribute ( 'author', author )
-            #print parent, title
 
             if language:
                 slot.setAttribute ( 'language', language )
@@ -1395,7 +1390,6 @@ class AwfulSnippet ( gtk.Window ):
 
         self.accelGroup = gtk.AccelGroup ()
         self.add_accel_group ( self.accelGroup )
-        #print os.path.abspath('.')
         try:
             self.set_icon_from_file ( config.appIcon )
         except Exception, e:
@@ -1405,8 +1399,6 @@ class AwfulSnippet ( gtk.Window ):
         self.set_size_request ( 800, 600 )
         self.set_position ( gtk.WIN_POS_CENTER )
 
-        #self.set_border_width (2)
-        # self.modify_bg(gtk.STATE_NORMAL, gtk.gdk.Color("#ffffff"))
         debug("AwfulSnippet -> __init__")
 
         self.ui = UserInterface ( self )
