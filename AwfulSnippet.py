@@ -594,17 +594,6 @@ class FolderStore ( gtk.TreeStore ):
 ######################################################
 ## TAGS
 
-#############################################################################
-# @brief When user selects a tag
-#############################################################################
-def tag_selection ( widget, *args ):
-    debug("TagView -> on_tag_selection")
-    #print widget, args
-    model, iter = widget.get_selection ().get_selected ()
-    if iter:
-        name = model.get_value ( iter, TAG_NAME )
-        widget.snippetstore.set_tag ( name )
-
 class TagView ( TreeView ):
     def __init__ ( self, ui ):
         super( TagView, self ).__init__( TagStore () )
@@ -617,7 +606,17 @@ class TagView ( TreeView ):
         tvcolumn.add_attribute ( renderer, 'text', TAG_NAME )
         tvcolumn.set_sort_column_id ( TAG_NAME )
         self.append_column ( tvcolumn )
-        self.connect ( 'cursor-changed', tag_selection )
+        #self.connect ( 'cursor-changed', tag_selection )
+        self.selection.connect("changed", self.tag_selection )
+
+    #############################################################################
+    # @brief When user selects a tag
+    #############################################################################
+    def tag_selection (self, *args ):
+        model, iter = self.get_selection ().get_selected ()
+        if iter:
+            name = model.get_value ( iter, TAG_NAME )
+            self.snippetstore.set_tag ( name )
 
 class TagStore ( gtk.ListStore ):
     def __init__(self):
