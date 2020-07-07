@@ -376,11 +376,82 @@ class Menubar( gtk.MenuBar ):
             self.append ( menu_label )
         self.show ()
 
+    #############################################################################
+    # @brief show/hide menubar
+    #############################################################################
     def menubarView ( self, checkMenuItem ):
         if checkMenuItem.active:
             self.show ()
         else:
             self.hide ()
+
+    #############################################################################
+    # @brief Triggers a popup menu based on context
+    #############################################################################
+    def context_menu( self, widget, menuItems ):
+        # this way cuz catching menu state to remove menu items... may change...
+        for i in [None, Menu()]: # pretty strange to me but it's okay for now
+            widget.popup_menu = i # to have dynamic parameter...
+        for m in menuItems:
+            menuItem = MenuItem(m['name'])
+            menuItem.connect('activate', m['activate'])
+            widget.popup_menu.add(menuItem)
+        widget.popup_menu.popup(None, None, None, m['event'].button, m['event'].time)
+
+    #############################################################################
+    # @brief When user clicks right inside folderview
+    #############################################################################
+    def folder_menu ( self, folderView, event, *args ):
+        debug("Menubar -> folder_menu")
+        if event.button != 3:
+            return
+        if folderView.get_path_at_pos(int(event.x), int(event.y)):
+            self.context_menu( folderView ,[{'name':'Add _subfolder...', 'activate':folderView.add_subfolder, 'event':event},
+                    {'name':'_Remove folder...', 'activate':folderView.remove_folder, 'event':event}] )
+        else:
+            self.context_menu( folderView ,[{'name':'_Add folder...', 'activate':folderView.add_folder, 'event':event}] )
+
+    #############################################################################
+    # @brief When user clicks right inside snippetview 
+    #############################################################################
+    def snippet_menu ( self, snippetView, event, *args ):
+        debug("Menubar -> snippet_menu")
+        if event.button != 3:
+            return
+        if snippetView.get_path_at_pos(int(event.x), int(event.y)):
+           self.context_menu( snippetView, [{'name':'Remove snippet...',
+            'activate':snippetView.remove_snippet, 'event':event},
+            {'name':'Properties...', 'activate':snippetView.properties_snippet,
+            'event':event}] )
+        else:
+            self.context_menu( snippetView, [{'name':'New snippet...',
+                'activate':snippetView.new_snippet, 'event':event}] )
+
+    #############################################################################
+    # @brief Populate(insert) textview popup menu
+    #############################################################################
+    def populate_menu ( self, widget, popup, data=None ):
+        debug("populate_menu")
+        item = gtk.MenuItem ( 'Share snippet' )
+        item.show ()
+        popup.append ( item )
+        item.connect ( 'activate', widget.share_snippet )
+    
+        item = gtk.MenuItem ( 'Highlight' )
+        item.show ()
+        popup.append (item)
+        menu = gtk.Menu ()
+        menu.show ()
+        item.set_submenu ( menu )
+        group = None
+        for desc, language in LanguageManager ().languages:
+            item = gtk.RadioMenuItem ( group, desc )
+            # activate item before setting the event...
+            item.set_active ( language == widget.language )
+            item.connect ( 'activate', widget.on_syntax_selection, language )
+            item.show ()
+            menu.append ( item )
+        if not group: group = item
 
 class Menu( gtk.Menu ):
     def __init__(self):
@@ -443,61 +514,6 @@ class LanguageManager ( gtksourceview2.LanguageManager ):
 ######################################################
 ## FOLDERS
 
-#############################################################################
-# @brief When user selects a folder
-#############################################################################
-def folder_selection ( widget, *args ):
-    debug("FolderView -> folder_selection")
-    model, iter = widget.get_selection ().get_selected ()
-    if iter:
-        id = model.get_value ( iter, FOLDER_ID )
-        if id:
-            widget.set_folder_id ( id )
-            # reset buffer only when needed
-            buff = widget.textview.get_buffer()
-            if buff.get_char_count():
-                widget.textview.set_buffer( TextBuffer () )
-            widget.textview.set_editable ( False )
-            widget.textview.set_cursor_visible ( False )
-
-#############################################################################
-# @brief When user clicks right on a folder
-#############################################################################
-def folder_menu ( widget, event, *args ):
-    debug("FolderView -> on_folder_menu")
-    path = widget.get_path_at_pos(int(event.x), int(event.y))
-    #if not widget.get_selection().get_selected():
-    #widget.row_activated(path,widget.get_column(0))
-
-    if event.button != 3:
-        return
-    if widget.get_path_at_pos(int(event.x), int(event.y)):
-        # print "1: ", widget.get_path_at_pos(int(event.x), int(event.y)), "\n2: ", widget.get_path_at_pos(int(event.x), int(event.y))[0]
-        # path = widget.get_path_at_pos(int(event.x), int(event.y))[0]
-        context_menu( widget ,[{'name':'Add _subfolder...', 'activate':widget.add_subfolder, 'event':event},
-                {'name':'_Remove folder...', 'activate':widget.remove_folder, 'event':event}] )
-    else:
-        context_menu( widget ,[{'name':'_Add folder...', 'activate':widget.add_folder, 'event':event}] )
-
-    #if event.button == 3:
-    #    selected = widget.get_selection ().get_selected ()[ 1 ] and True or False
-    #    #widget.add_sub_menuitem.set_sensitive ( selected )
-    #    #widget.remove_menuitem.set_sensitive ( selected )
-    #    widget.popup_menu.popup ( None, None, None, event.button, event.time )
-
-#############################################################################
-# @brief Triggers a popup menu based on context
-#############################################################################
-def context_menu( widget, menuItems ):
-    # this way cuz catching menu state to remove menu items... may change...
-    for i in [None, Menu()]: # pretty strange to me but it's okay for now
-        widget.popup_menu = i # to have dynamic parameter...
-    for m in menuItems:
-        menuItem = MenuItem(m['name'])
-        menuItem.connect('activate', m['activate'])
-        widget.popup_menu.add(menuItem)
-    widget.popup_menu.popup(None, None, None, m['event'].button, m['event'].time)
-
 class FolderView ( TreeView ):
     def __init__ ( self, ui ):
         super ( FolderView, self ).__init__ ( FolderStore () )
@@ -508,6 +524,7 @@ class FolderView ( TreeView ):
         self.textview = ui.textview
         self.snippetstore = ui.snippetstore
         self.mainwindow = ui.mainwindow
+        self.menuview = ui.menuview
 
         renderer = CellRendererText ()
         renderer.connect ( 'edited', self.edited_folder )
@@ -516,9 +533,26 @@ class FolderView ( TreeView ):
         tvcolumn.add_attribute ( renderer, 'text', FOLDER_NAME )
 
         self.append_column ( tvcolumn )
-        self.connect ( 'cursor-changed', folder_selection )
-        self.connect ( 'button-press-event', folder_menu )
+        self.selection.connect ( 'changed', self.folder_selection )
+        self.connect ( 'button-press-event', ui.menuview.folder_menu )
         #self.get_selection().set_select_function(folder_selection, self)
+
+    #############################################################################
+    # @brief When user selects a folder
+    #############################################################################
+    def folder_selection ( self, *args ):
+        debug("FolderView -> folder_selection")
+        model, iter = self.get_selection ().get_selected ()
+        if iter:
+            id = model.get_value ( iter, FOLDER_ID )
+            if id:
+                self.set_folder_id ( id )
+                # reset buffer only when needed
+                buff = self.textview.get_buffer()
+                if buff.get_char_count():
+                    self.textview.set_buffer( TextBuffer () )
+                self.textview.set_editable ( False )
+                self.textview.set_cursor_visible ( False )
 
     #############################################################################
     # @brief Set folder id
@@ -626,33 +660,6 @@ class TagStore ( gtk.ListStore ):
 ######################################################
 ## SNIPPETS
 
-#############################################################################
-# @brief Snippet selection
-#############################################################################
-def snippet_selection ( widget, *args ):
-    debug("SnippetView -> on_selection")
-    #print widget, args
-    f_model, f_iter = widget.get_selection ().get_selected ()
-    if f_iter:
-        code     = f_model.get_value ( f_iter, SNIPPET_CODE ) or ''
-        language = f_model.get_value ( f_iter, SNIPPET_LANGUAGE )
-        if not widget.editing:
-            widget.textview.new_buffer ( code, language )
-
-#############################################################################
-# @brief When user clicks inside snippetview
-#############################################################################
-def snippet_menu ( widget, event, *args ):
-    #print widget, event, args
-    if event.button != 3:
-        return
-    if widget.get_path_at_pos(int(event.x), int(event.y)):
-       path = widget.get_path_at_pos(int(event.x), int(event.y))[0]
-       context_menu( widget, [{'name':'Remove snippet...', 'activate':widget.remove_snippet, 'event':event},
-        {'name':'Properties...', 'activate':widget.properties_snippet, 'event':event}] )
-    else:
-        context_menu( widget, [{'name':'New snippet...', 'activate':widget.new_snippet, 'event':event}] )
-
 class SnippetView ( TreeView ):
     editing = None              # public
     __useprevious = False       # private
@@ -666,8 +673,8 @@ class SnippetView ( TreeView ):
         self.mainwindow = ui.mainwindow
         self.snippetstore = ui.snippetstore
 
-        self.connect ( 'cursor-changed', snippet_selection )
-        self.connect ( 'button-press-event', snippet_menu )
+        self.selection.connect ( 'changed', self.snippet_selection )
+        self.connect ( 'button-press-event', ui.menuview.snippet_menu )
 
         renderer = CellRendererText ()
         renderer.connect ( 'edited', self.title_snippet )
@@ -677,6 +684,19 @@ class SnippetView ( TreeView ):
         tvcolumn.add_attribute ( renderer, 'text', SNIPPET_TITLE )
         tvcolumn.set_sort_column_id ( SNIPPET_TITLE )
         self.append_column ( tvcolumn )
+
+    #############################################################################
+    # @brief Snippet selection
+    #############################################################################
+    def snippet_selection ( self, *args ):
+        debug("SnippetView -> on_selection")
+        #print self, args
+        f_model, f_iter = self.get_selection ().get_selected ()
+        if f_iter:
+            code     = f_model.get_value ( f_iter, SNIPPET_CODE ) or ''
+            language = f_model.get_value ( f_iter, SNIPPET_LANGUAGE )
+            if not self.editing:
+                self.textview.new_buffer ( code, language )
 
     #############################################################################
     # @brief Create a new snippet
@@ -923,31 +943,7 @@ class TextBuffer ( gtksourceview2.Buffer ):
         self.end_not_undoable_action ()
         self.set_modified ( False )
 
-#############################################################################
-# @brief Populate(insert) textview popup menu
-#############################################################################
-def populate_menu ( widget, popup, data=None ):
-    debug("populate_menu")
-    item = gtk.MenuItem ( 'Share snippet' )
-    item.show ()
-    popup.append ( item )
-    item.connect ( 'activate', widget.share_snippet )
 
-    item = gtk.MenuItem ( 'Highlight' )
-    item.show ()
-    popup.append (item)
-    menu = gtk.Menu ()
-    menu.show ()
-    item.set_submenu ( menu )
-    group = None
-    for desc, language in LanguageManager ().languages:
-        item = gtk.RadioMenuItem ( group, desc )
-        # activate item before setting the event...
-        item.set_active ( language == widget.language )
-        item.connect ( 'activate', widget.on_syntax_selection, language )
-        item.show ()
-        menu.append ( item )
-    if not group: group = item
 
 class TextView ( gtksourceview2.View ):
     language = None
@@ -972,7 +968,7 @@ class TextView ( gtksourceview2.View ):
         self.set_draw_spaces ( gtksourceview2.DRAW_SPACES_SPACE|gtksourceview2.DRAW_SPACES_TAB )
         self.modify_font ( pango.FontDescription ( config.appFont ) )
         self.gtkSourceGutter = self.get_gutter ( gtk.TEXT_WINDOW_LEFT )
-        self.connect ( 'populate-popup', populate_menu )
+        self.connect ( 'populate-popup', ui.menuview.populate_menu )
 
     #############################################################################
     # @brief Opens up a new buffer
@@ -1065,6 +1061,7 @@ class UserInterface ( gtk.VBox ):
         self.mainwindow          = gtkWindow
         self.snippetstore        = SnippetStore ()
 
+        self.menuview            = Menubar ( self.mainwindow )
         self.textview            = TextView ( self )
         self.snippetview         = SnippetView ( self )
         self.folderview          = FolderView ( self )
@@ -1072,7 +1069,7 @@ class UserInterface ( gtk.VBox ):
 
         self.load()
 
-        self.pack_start ( Menubar ( self.mainwindow ),
+        self.pack_start ( self.menuview,
             expand=False, fill=True, padding=0 )
 
         # vertical pane

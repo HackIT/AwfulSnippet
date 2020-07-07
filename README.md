@@ -26,16 +26,11 @@ It is a refactoring from PySnippet v1.3 Eduardo Aguiar (aguiar@users.sourceforge
 - Curl
 
 
-### TODO
-
-- find new way to remove global functions and add them back to object methods... It's ugly and I hate that.
-problem were that these functions were getting 2 times the same object(as arguments) using callbacks...
-
 ### features
 
 - user defined folder hierarchy as **tree and tags**
 
-- share your snippet on the web using **bpaste service**
+- share your snippet on the web using **0x0.st service** 
 
 - **autoclipboard**, each times you select a snippet it available to your clipboard directly.
 
