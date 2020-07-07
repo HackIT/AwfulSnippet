@@ -450,9 +450,8 @@ class LanguageManager ( gtksourceview2.LanguageManager ):
 # @brief When user selects a folder
 #############################################################################
 def folder_selection ( widget, *args ):
-    debug("FolderView -> on_folder_selection")
+    debug("FolderView -> folder_selection")
     model, iter = widget.get_selection ().get_selected ()
-    #print model, iter
     if iter:
         id = model.get_value ( iter, FOLDER_ID )
         if id:
@@ -469,7 +468,6 @@ def folder_selection ( widget, *args ):
 #############################################################################
 def folder_menu ( widget, event, *args ):
     debug("FolderView -> on_folder_menu")
-    #print widget, event, args
     path = widget.get_path_at_pos(int(event.x), int(event.y))
     #if not widget.get_selection().get_selected():
     #widget.row_activated(path,widget.get_column(0))
@@ -479,16 +477,29 @@ def folder_menu ( widget, event, *args ):
     if widget.get_path_at_pos(int(event.x), int(event.y)):
         # print "1: ", widget.get_path_at_pos(int(event.x), int(event.y)), "\n2: ", widget.get_path_at_pos(int(event.x), int(event.y))[0]
         # path = widget.get_path_at_pos(int(event.x), int(event.y))[0]
-        widget.context_menu( [{'name':'Add _subfolder...', 'activate':widget.add_subfolder, 'event':event},
+        context_menu( widget ,[{'name':'Add _subfolder...', 'activate':widget.add_subfolder, 'event':event},
                 {'name':'_Remove folder...', 'activate':widget.remove_folder, 'event':event}] )
     else:
-        widget.context_menu( [{'name':'_Add folder...', 'activate':widget.add_folder, 'event':event}] )
+        context_menu( widget ,[{'name':'_Add folder...', 'activate':widget.add_folder, 'event':event}] )
 
     #if event.button == 3:
     #    selected = widget.get_selection ().get_selected ()[ 1 ] and True or False
     #    #widget.add_sub_menuitem.set_sensitive ( selected )
     #    #widget.remove_menuitem.set_sensitive ( selected )
     #    widget.popup_menu.popup ( None, None, None, event.button, event.time )
+
+#############################################################################
+# @brief Triggers a popup menu based on context
+#############################################################################
+def context_menu( widget, menuItems ):
+    # this way cuz catching menu state to remove menu items... may change...
+    for i in [None, Menu()]: # pretty strange to me but it's okay for now
+        widget.popup_menu = i # to have dynamic parameter...
+    for m in menuItems:
+        menuItem = MenuItem(m['name'])
+        menuItem.connect('activate', m['activate'])
+        widget.popup_menu.add(menuItem)
+    widget.popup_menu.popup(None, None, None, m['event'].button, m['event'].time)
 
 class FolderView ( TreeView ):
     def __init__ ( self, ui ):
@@ -511,19 +522,6 @@ class FolderView ( TreeView ):
         self.connect ( 'cursor-changed', folder_selection )
         self.connect ( 'button-press-event', folder_menu )
         #self.get_selection().set_select_function(folder_selection, self)
-
-    #############################################################################
-    # @brief Triggers a popup menu based on context
-    #############################################################################
-    def context_menu( self, menuItems ):
-        # this way cuz catching menu state to remove menu items... may change...
-        for i in [None, Menu()]: # pretty strange to me but it's okay for now
-            self.popup_menu = i # to have dynamic parameter...
-        for m in menuItems:
-            menuItem = MenuItem(m['name'])
-            menuItem.connect('activate', m['activate'])
-            self.popup_menu.add(menuItem)
-        self.popup_menu.popup(None, None, None, m['event'].button, m['event'].time)
 
     #############################################################################
     # @brief Set folder id
@@ -654,10 +652,10 @@ def snippet_menu ( widget, event, *args ):
         return
     if widget.get_path_at_pos(int(event.x), int(event.y)):
        path = widget.get_path_at_pos(int(event.x), int(event.y))[0]
-       widget.context_menu( [{'name':'Remove snippet...', 'activate':widget.remove_snippet, 'event':event},
+       context_menu( widget, [{'name':'Remove snippet...', 'activate':widget.remove_snippet, 'event':event},
         {'name':'Properties...', 'activate':widget.properties_snippet, 'event':event}] )
     else:
-        widget.context_menu( [{'name':'New snippet...', 'activate':widget.new_snippet, 'event':event}] )
+        context_menu( widget, [{'name':'New snippet...', 'activate':widget.new_snippet, 'event':event}] )
 
 class SnippetView ( TreeView ):
     editing = None              # public
@@ -683,19 +681,6 @@ class SnippetView ( TreeView ):
         tvcolumn.add_attribute ( renderer, 'text', SNIPPET_TITLE )
         tvcolumn.set_sort_column_id ( SNIPPET_TITLE )
         self.append_column ( tvcolumn )
-
-    #############################################################################
-    # @brief Triggers a popup menu based on context
-    #############################################################################
-    def context_menu( self, menuItems ):
-        # this way cuz catching menu state to remove menu items... may change...
-        for i in [None, Menu()]: # pretty strange to me but it's okay for now
-            self.popup_menu = i # to have dynamic parameter...
-        for m in menuItems:
-            menuItem = MenuItem(m['name'])
-            menuItem.connect('activate', m['activate'])
-            self.popup_menu.add(menuItem)
-        self.popup_menu.popup(None, None, None, m['event'].button, m['event'].time)
 
     #############################################################################
     # @brief Create a new snippet
