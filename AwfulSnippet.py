@@ -1161,6 +1161,7 @@ class UserInterface ( gtk.VBox ):
 
         snippetdir = re.sub( '/pysnippet.xml$', '', config.appFile )
         snippetdir = os.path.expanduser( snippetdir )
+        self.__filename = os.path.expanduser( config.appFile )
 
         if filename:
             self.__filename = filename
@@ -1168,10 +1169,9 @@ class UserInterface ( gtk.VBox ):
 
         if not doc and not os.path.exists( snippetdir ):
             os.mkdir( snippetdir )
-            self.defaultXml()
+            self.defaultXml( self.__filename )
 
         if not doc:
-            self.__filename = os.path.expanduser( config.appFile )
             try:
                 doc = xml.dom.minidom.parse ( self.__filename )
             except Exception, e:
@@ -1221,7 +1221,7 @@ class UserInterface ( gtk.VBox ):
     #############################################################################
     # @brief create a default snippet definition file (XML)
     #############################################################################
-    def defaultXml ( self ):
+    def defaultXml ( self, filename ):
         debug("UserInterface -> defaultXml")
         impl = xml.dom.minidom.getDOMImplementation ()
         doc  = impl.createDocument (None, "root", None)
@@ -1240,7 +1240,7 @@ class UserInterface ( gtk.VBox ):
         elm.appendChild (code)
         root.appendChild (elm)
         # finally write the default file
-        fp = open ( os.path.expanduser( config.appFile ), "w" )
+        fp = open ( filename, "w" )
         doc.writexml (fp, indent="  ", newl="\n")
         fp.close ()
 
