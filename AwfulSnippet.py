@@ -1167,7 +1167,7 @@ class UserInterface ( gtk.VBox ):
         snippetdir = os.path.expanduser( snippetdir )
         self.__filename = os.path.expanduser( config.appFile )
 
-        if os.path.exists( filename ):
+        if filename and os.path.exists( filename ):
             self.__filename = filename
             try:
                 doc = xml.dom.minidom.parse ( self.__filename )
