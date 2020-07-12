@@ -406,10 +406,13 @@ class Menus( gtk.MenuBar ):
         if event.button != 3:
             return
         if folderView.get_path_at_pos(int(event.x), int(event.y)):
-            self.context_menu( folderView ,[{'name':'Add _subfolder...', 'activate':folderView.add_subfolder, 'event':event},
-                    {'name':'_Remove folder...', 'activate':folderView.remove_folder, 'event':event}] )
+            self.context_menu( folderView ,[{'name':'Add _subfolder...',
+                'activate':folderView.add_subfolder, 'event':event},
+                {'name':'_Remove folder...', 'activate':folderView.remove_folder,
+                'event':event}] )
         else:
-            self.context_menu( folderView ,[{'name':'_Add folder...', 'activate':folderView.add_folder, 'event':event}] )
+            self.context_menu( folderView ,[{'name':'_Add folder...',
+                'activate':folderView.add_folder, 'event':event}] )
 
     #############################################################################
     # @brief When user clicks right inside snippetview 
@@ -560,7 +563,6 @@ class FolderView ( TreeView ):
     def set_folder_id ( self, id ):
         debug("FolderView -> set_folder_id")
         self.snippetstore.set_folder ( id )
-        #print "set folder", id
 
     #############################################################################
     # @brief Add folder
@@ -667,7 +669,7 @@ class SnippetView ( TreeView ):
     __previousauthor = None
     __previoustags = None
     def __init__ ( self, ui ):
-        super( SnippetView, self ).__init__( ui.snippetstore.filter () )
+        super( SnippetView, self ).__init__( ui.snippetstore.get_filter () )
         debug("SnippetView -> __init__")
         self.textview = ui.textview
         self.mainwindow = ui.mainwindow
@@ -823,7 +825,6 @@ class SnippetView ( TreeView ):
     def title_snippet ( self, cell, path_string, new_text ):
         debug("SnippetView -> on_edited")
         # treemodelfilter
-        #print self, cell, path_string, new_text
         f_model  = self.get_model ()
         f_iter   = f_model.get_iter_from_string ( path_string )
         # treestore
@@ -897,13 +898,6 @@ class SnippetStore ( gtk.ListStore ):
             return model.get_value ( iter, SNIPPET_PARENT ) == self.__folder_id
         else:
             return self.__tag in model.get_value ( iter, SNIPPET_TAGS )
-
-    #############################################################################
-    # @brief Return a TreeModelFilter
-    #############################################################################
-    def filter ( self ):
-        debug("SnippetStore -> filter")
-        return self.__filter
 
 ######################################################
 ## TEXTVIEW
