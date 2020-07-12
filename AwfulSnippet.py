@@ -1160,13 +1160,14 @@ class UserInterface ( gtk.VBox ):
         self.tags.clear ()
 
         snippetdir = re.sub( '/pysnippet.xml$', '', config.appFile )
+        snippetdir = os.path.expanduser( snippetdir )
 
         if filename:
             self.__filename = filename
             doc = xml.dom.minidom.parse ( self.__filename )
 
-        if not doc and not os.path.exists( os.path.expanduser( snippetdir ) ):
-            os.mkdir( os.path.expanduser( snippetdir ) )
+        if not doc and not os.path.exists( snippetdir ):
+            os.mkdir( snippetdir )
             self.defaultXml()
 
         if not doc:
