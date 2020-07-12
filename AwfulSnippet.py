@@ -1059,7 +1059,11 @@ class UserInterface ( gtk.VBox ):
         self.folderview          = FolderView ( self )
         self.tagview             = TagView ( self )
 
-        self.load()
+        try:
+            if sys.argv[1]:
+                self.load(sys.argv[1])
+        except Exception, e:
+            self.load()
 
         self.pack_start ( self.menuview,
             expand=False, fill=True, padding=0 )
@@ -1163,12 +1167,18 @@ class UserInterface ( gtk.VBox ):
         snippetdir = os.path.expanduser( snippetdir )
         self.__filename = os.path.expanduser( config.appFile )
 
-        if filename:
+        if os.path.exists( filename ):
             self.__filename = filename
-            doc = xml.dom.minidom.parse ( self.__filename )
+            try:
+                doc = xml.dom.minidom.parse ( self.__filename )
+            except Exception, e:
+                raise e
 
         if not doc and not os.path.exists( snippetdir ):
-            os.mkdir( snippetdir )
+            try:
+                os.mkdir( snippetdir )
+            except Exception, e:
+                raise e
             self.defaultXml( self.__filename )
 
         if not doc:
