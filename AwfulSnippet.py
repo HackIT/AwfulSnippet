@@ -538,7 +538,6 @@ class FolderView ( TreeView ):
         self.append_column ( tvcolumn )
         self.selection.connect ( 'changed', self.folder_selection )
         self.connect ( 'button-press-event', ui.menuview.folder_menu )
-        #self.get_selection().set_select_function(folder_selection, self)
 
     #############################################################################
     # @brief When user selects a folder
@@ -642,7 +641,6 @@ class TagView ( TreeView ):
         tvcolumn.add_attribute ( renderer, 'text', TAG_NAME )
         tvcolumn.set_sort_column_id ( TAG_NAME )
         self.append_column ( tvcolumn )
-        #self.connect ( 'cursor-changed', tag_selection )
         self.selection.connect("changed", self.tag_selection )
 
     #############################################################################
@@ -1047,6 +1045,7 @@ class TextView ( gtksourceview2.View ):
 class UserInterface ( gtk.VBox ):
     __folder_id = None
     __tag = None
+    __filename = None
 
     def __init__ ( self, gtkWindow ):
         super ( UserInterface, self ).__init__ ( False, 1 )
@@ -1163,15 +1162,17 @@ class UserInterface ( gtk.VBox ):
         snippetdir = re.sub( '/pysnippet.xml$', '', config.appFile )
 
         if filename:
-            doc = xml.dom.minidom.parse ( filename )
+            self.__filename = filename
+            doc = xml.dom.minidom.parse ( self.__filename )
 
         if not doc and not os.path.exists( os.path.expanduser( snippetdir ) ):
             os.mkdir( os.path.expanduser( snippetdir ) )
             self.defaultXml()
 
         if not doc:
+            self.__filename = os.path.expanduser( config.appFile )
             try:
-                doc = xml.dom.minidom.parse ( os.path.expanduser( config.appFile ) )
+                doc = xml.dom.minidom.parse ( self.__filename )
             except Exception, e:
                 raise e
 
@@ -1279,7 +1280,7 @@ class UserInterface ( gtk.VBox ):
             if filename:
                 fp = open ( filename, "w" )
             else:
-                fp = open ( os.path.expanduser( config.appFile ), "w" )
+                fp = open ( self.__filename, "w" )
             doc.writexml ( fp, indent="  ", newl="\n" )
         except Exception, e:
             print e
