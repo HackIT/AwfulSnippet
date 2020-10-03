@@ -183,7 +183,7 @@ class PropertiesDialog ( gtk.Dialog ):
     label.show ()
     table.attach ( label, 0, 1, 1, 2 )
 
-    self.author_entry = gtk.Entry ( 8 )
+    self.author_entry = gtk.Entry ( 25 )
     self.author_entry.show ()
     table.attach ( self.author_entry, 1, 2, 1, 2 )
 
