@@ -49,3 +49,7 @@ It is a refactoring from PySnippet v1.3 Eduardo Aguiar (aguiar@users.sourceforge
 
 - get ubuntu fonts here ![ubuntu fonts](https://assets.ubuntu.com/v1/0cef8205-ubuntu-font-family-0.83.zip)
 
+###### Enjoy, HackIT.
+
+###### BTC: bc1q5jw0dsgc4x96l0um6vqexp5kq7wthlfvz944uc
+
